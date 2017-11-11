@@ -1,4 +1,9 @@
 #!/bin/bash
+
+# Include me in your bash_profile:
+# [ -f ~/my-containers/container-git/bin/container-git.bash ] && . ~/my-containers/container-git/bin/container-git.bash
+
+
 clean-docker-images() { docker rmi `docker images | grep \<none | awk '{print $3}'` ; }
 clean-docker-containers() { docker rm `docker ps -a | grep Exited | awk '{print $1}'` ; }
 
