@@ -88,4 +88,12 @@ makes the container buildable, by adding a "build" function to the shell.
 All much cooler from inside a docker container.
 
 
+# `.containers.d` grows
 
+Now it's `~/.containers.d/*` so the install script can put these
+command definitions in a standard home and it's one line change to
+the `~/.bash_profile` (:O)
+
+# You're sticking stuff in the `~/.bash_profile` ?
+
+Yeah it's a decision to focus on other bits.
