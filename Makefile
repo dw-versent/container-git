@@ -6,9 +6,9 @@ distdir = $(tarname)-$(version)
 install: install-containers.d
 	rm -f ${HOME}/.containers.d/$(package)
 	rm -f ${HOME}/.containers.d/image-git
-	ln -s ${PWD}/src/image-git.bash ${HOME}/.containers.d/image-git
-	cp ${PWD}/src/$(package).bash ${HOME}/.containers.d/$(package)
-	sed -i '' 's|#CONTAINER_GIT_HOME#|${PWD}|g' ${HOME}/.containers.d/$(package)
+	ln -s ${PWD}/src/$(package).bash ${HOME}/.containers.d/$(package)
+	cp ${PWD}/src/image-git.bash ${HOME}/.containers.d/image-git
+	sed -i '' 's|#CONTAINER_GIT_HOME#|${PWD}|g' ${HOME}/.containers.d/image-git
 
 uninstall:
 	rm -f ${HOME}/.containers.d/$(package)
