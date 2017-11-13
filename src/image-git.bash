@@ -9,8 +9,7 @@ build-container-git-base() {
     .
 }
 
-
-need_to_rebuild-git-base() {
+need-to-rebuild-git-base() {
 
   docker images | grep 'whatbirdisthat/alpine-git-base' && return 0
   docker pull alpine:latest | grep -v 'Downloaded newer image for alpine:latest' || return 0
