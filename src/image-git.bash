@@ -1,31 +1,40 @@
 #!/bin/bash
 
-build-git-image() {
-THE_PWD=`pwd`
-GIT_CONTAINER_HOME='#CONTAINER_GIT_HOME#'
-
-CONTAINER_NAME=${1:-git-container}
-GITHUB_USER=${2:-nobody}
-GIT_USERNAME=${3:-My user "name" for git logs}
-GIT_EMAIL=${4:-user.email@local}
-
-build-base() {
+build-container-git-base() {
   cd $GIT_CONTAINER_HOME/imagedefs/base
   docker build \
     --rm \
     --squash \
-    -t alpine-git-base \
+    -t whatbirdisthat/alpine-git-base \
     .
 }
 
-docker pull alpine | grep 'Downloaded newer image for alpine:latest' && build-base
+
+need_to_rebuild-git-base() {
+
+  docker images | grep 'whatbirdisthat/alpine-git-base' && return 0
+  docker pull alpine:latest | grep -v 'Downloaded newer image for alpine:latest' || return 0
+
+  return 1
+}
+
+build-git-image() {
+THE_PWD=`pwd`
+GIT_CONTAINER_HOME='#CONTAINER_GIT_HOME#'
+
+CONTAINER_NAME=${1:-whatbirdisthat/git-container}
+GITHUB_USER=${2:-nobody}
+GIT_USERNAME=${3:-My user "name" for git logs}
+GIT_EMAIL=${4:-user.email@local}
+
+need-to-rebuild-git-base || build-container-git-base
 
 cd $GIT_CONTAINER_HOME/imagedefs/user
 docker build \
   --rm \
   --squash \
   -t $CONTAINER_NAME \
-  --build-arg BASEIMAGE=alpine-git-base \
+  --build-arg BASEIMAGE=whatbirdisthat/alpine-git-base \
   --build-arg GITHUB_USER="$GITHUB_USER" \
   --build-arg GIT_USERNAME="$GIT_USERNAME" \
   --build-arg GIT_EMAIL="$GIT_EMAIL" \
