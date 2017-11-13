@@ -13,7 +13,7 @@ build-git-example-container() {
   [ -f ~/.ssh/.my-git-credentials ] && export GIT_CREDENTIALS=~/.ssh/.my-git-credentials
 
   $BUILDCMD \
-    git-container \
+    whatbirdisthat/git-container \
     me-example \
     "Example User" \
     "example@example.com"

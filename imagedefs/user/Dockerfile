@@ -1,4 +1,4 @@
-ARG BASEIMAGE=alpine:latest
+ARG BASEIMAGE=whatbirdisthat/alpine-git-base
 FROM ${BASEIMAGE}
 
 WORKDIR /
