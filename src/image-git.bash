@@ -25,6 +25,7 @@ CONTAINER_NAME=${1:-whatbirdisthat/git-container}
 GITHUB_USER=${2:-nobody}
 GIT_USERNAME=${3:-My user "name" for git logs}
 GIT_EMAIL=${4:-user.email@local}
+DOCKERFILE_LOCATION=${5:-Dockerfile}
 
 need-to-rebuild-git-base || build-container-git-base
 
@@ -33,6 +34,7 @@ docker build \
   --rm \
   --squash \
   -t $CONTAINER_NAME \
+  --file $DOCKERFILE_LOCATION \
   --build-arg BASEIMAGE=whatbirdisthat/alpine-git-base \
   --build-arg GITHUB_USER="$GITHUB_USER" \
   --build-arg GIT_USERNAME="$GIT_USERNAME" \
