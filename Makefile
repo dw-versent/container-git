@@ -1,18 +1,27 @@
-package = container-git
+item = git
+image = image-$(item)
+package = container-$(item)
+container = $(package)
 version = 1.0
 tarname = $(package)
 distdir = $(tarname)-$(version)
 
-install: install-containers.d
-	rm -f ${HOME}/.containers.d/$(package)
-	rm -f ${HOME}/.containers.d/image-git
-	ln -s ${PWD}/src/$(package).bash ${HOME}/.containers.d/$(package)
-	cp ${PWD}/src/image-git.bash ${HOME}/.containers.d/image-git
-	sed -i '' 's|#CONTAINER_GIT_HOME#|${PWD}|g' ${HOME}/.containers.d/image-git
+imagebash = ${HOME}/src/$(image).bash
+containerbash = ${HOME}/src/$(package)
 
-uninstall:
-	rm -f ${HOME}/.containers.d/$(package)
-	rm -f ${HOME}/.containers.d/image-git
+
+install: install-containers.d remove-links
+	rm -f ${HOME}/.containers.d/$(container)
+	rm -f ${HOME}/.containers.d/$(image)
+	ln -s ${PWD}/src/$(container).bash ${HOME}/.containers.d/$(container)
+	cp ${PWD}/src/$(image).bash ${HOME}/.containers.d/$(image)
+	sed -i '' 's|#CONTAINER_GIT_HOME#|${PWD}|g' ${HOME}/.containers.d/$(image)
+
+remove-links:
+	rm -f ${HOME}/.containers.d/$(container)
+	rm -f ${HOME}/.containers.d/$(image)
+
+uninstall: remove-links
 
 uninstall-containers.d:
 	rm -rf ~/.containers.d/
