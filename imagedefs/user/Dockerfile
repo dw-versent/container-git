@@ -29,5 +29,6 @@ USER ${GITHUB_USER}
 RUN git config --global user.name "${GIT_USERNAME}"
 RUN git config --global user.email "${GIT_EMAIL}"
 RUN git config --global credential.helper 'read-only'
+RUN git config --global color.status always
 
 ENTRYPOINT /bin/bash
