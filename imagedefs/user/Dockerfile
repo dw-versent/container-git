@@ -7,7 +7,6 @@ ARG GITHUB_USER=nobody
 ARG GIT_USERNAME="nobody"
 ARG GIT_EMAIL="nobody@localhost"
 
-
 RUN echo "GITHUB USER IS " ${GITHUB_USER}
 
 RUN adduser -D -g '' ${GITHUB_USER}
