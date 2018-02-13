@@ -1,8 +1,8 @@
 FROM alpine:latest
 
-RUN apk add --no-cache \
-  bash git git-doc git-bash-completion openssh-client less \
-  tree
+RUN apk add --no-cache bash less tree \
+  git git-doc git-bash-completion \
+  openssh-client
 
 WORKDIR /
 
@@ -27,4 +27,3 @@ WORKDIR /usr/local/sbin
 ADD assets/git-credential-read-only .
 RUN chgrp git git-credential-read-only
 RUN chmod ug+rx git-credential-read-only
-
