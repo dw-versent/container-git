@@ -1,7 +1,7 @@
 #!/bin/bash
 
-clean-docker-images() { docker rmi `docker images | grep \<none | awk '{print $3}'` ; }
-clean-docker-containers() { docker rm `docker ps -a | grep Exited | awk '{print $1}'` ; }
+#clean-docker-images() { docker rmi `docker images | grep \<none | awk '{print $3}'` ; }
+#clean-docker-containers() { docker rm `docker ps -a | grep Exited | awk '{print $1}'` ; }
 
 export BUILDCMD='build-git-image'
 
