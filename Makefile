@@ -40,7 +40,7 @@ ifndef GIT_EMAIL
 endif
 
 
-install: check-build-base-image check-user-image-variables build-user-image build-image-command
+install: check-build-base-image check-user-image-variables build-user-image build-container-command
 	@echo "YAY $$DOCKERFILE"
 
 
@@ -59,7 +59,7 @@ endef
 
 export RUN_COMMAND
 
-build-image-command:
+build-container-command:
 	echo "$$RUN_COMMAND" > "/usr/local/bin/$(CONTAINER_NAME)"
 	chmod u+x "/usr/local/bin/$(CONTAINER_NAME)"
 
@@ -86,9 +86,15 @@ build-user-image:
 
 define HELP_TEXT
 GIT CONTAINER THINGY
-  * Build containers for your git identities.
 
-Example:
+	Build containers for your git identities.
+
+	Setting up git on a developer workstation can be tangled if the developer has
+	multiple git identities (say, github, bitbucket, corporate gits etc).
+
+	One way to untangle this and keep git identities separated is to use containers.
+
+Examples:
   1.
 	Simple git container using bare minimums
 
@@ -99,7 +105,7 @@ Example:
 
   The above will create an image called git-loginusername and put an executable
   script into /usr/local/bin/git-loginusername which will fire up a container in $PWD
-  using the private key `id_rsa` from `$HOME/.ssh/.`
+  bind-mounting the private key `$HOME/.ssh/id_rsa`.
 
   2.
   To use another key, set PRIVATE_KEY_LOCATION on the command line:
