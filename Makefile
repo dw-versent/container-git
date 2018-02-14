@@ -15,15 +15,43 @@ ifndef DOCKERFILE
 DOCKERFILE:=Dockerfile
 endif
 
+ALPINE_UPDATED:=Downloaded newer image for alpine:latest
+LABEL_FILTER:=label=git-user-identity
+
 check-build-base-image:
-	@{                                                                                               \
-		docker images | grep -q '$(base_image)' && exit 0 ;                                            \
-		docker pull alpine:latest | grep -vq 'Downloaded newer image for alpine:latest' || exit 0 ;    \
-		echo "Building BASE image '$(base_image)'";                                                    \
-		cd imagedefs/base &&                                                                           \
-		docker build                                                                                   \
-		--rm --squash -t                                                                               \
-		$(base_image) . ;                                                                              \
+	@{                                                                           \
+	docker images | grep -q '$(base_image)' && exit 0 ;                          \
+	docker pull alpine:latest | grep -vq '$(ALPINE_UPDATED)' || exit 0 ;         \
+	echo "Building BASE image '$(base_image)'";                                  \
+	cd imagedefs/base &&                                                         \
+	docker build                                                                 \
+	--rm --squash                                                                \
+	--label "git-base-image"                                                     \
+	-t $(base_image) . ;                                                         \
+	}
+
+build-user-image:
+	@{                                                                           \
+	docker images | grep -q '$(CONTAINER_NAME)' && exit 0 ;                      \
+	echo "*** BUILDING $(CONTAINER_NAME) IMAGE ***" &&                           \
+	cd imagedefs/user &&                                                         \
+	docker build --rm --squash -t $(CONTAINER_NAME)                              \
+	--label "git-user-identity"                                                  \
+	--file "$(DOCKERFILE)"                                                       \
+	--build-arg BASEIMAGE=$(base_image)                                          \
+	--build-arg LOGIN="$(LOGIN)"                                                 \
+	--build-arg GIT_USERNAME="$(GIT_USERNAME)"                                   \
+	--build-arg GIT_EMAIL="$(GIT_EMAIL)"                                         \
+	. ;                                                                          \
+	}
+
+remove-user-images:
+	@{                                                                           \
+	THEREPO=$(repo) ;                                                            \
+	THEIMAGES=`docker images -q $${THEREPO}/* --filter "$(LABEL_FILTER)"` ;      \
+	if [ "x$${THEIMAGES}" != "x" ]; then                                         \
+	  docker rmi `docker images -q $${THEREPO}/* --filter "$(LABEL_FILTER)"` ;   \
+	fi                                                                           \
 	}
 
 check-user-image-variables:
@@ -37,20 +65,14 @@ ifndef GIT_EMAIL
 	$(error NO GIT EMAIL)
 endif
 
-install: check-build-base-image
-	@:
-
-build: install build-container-command
-	@:
-
 define RUN_COMMAND
 #!/bin/bash
-docker run -it --rm                                                     \
--v $(PRIVATE_KEY_LOCATION):/home/$(LOGIN)/.ssh/id_rsa                   \
--v $(GIT_CREDENTIALS_LOCATION):/home/$(LOGIN)/.git-credentials          \
--v `pwd`:`pwd`                                                          \
--w `pwd`                                                                \
--h $(item).local                                                        \
+docker run -it --rm                                                            \
+-v $(PRIVATE_KEY_LOCATION):/home/$(LOGIN)/.ssh/id_rsa                          \
+-v $(GIT_CREDENTIALS_LOCATION):/home/$(LOGIN)/.git-credentials                 \
+-v `pwd`:`pwd`                                                                 \
+-w `pwd`                                                                       \
+-h $(item).local                                                               \
 $(CONTAINER_NAME)
 endef
 
@@ -59,25 +81,20 @@ build-container-command: check-user-image-variables build-user-image
 	@echo "$$RUN_COMMAND" > "/usr/local/bin/$(executable_name)"
 	@chmod u+x "/usr/local/bin/$(executable_name)"
 
-clean: uninstall
+install: check-build-base-image
+	@:
 
-uninstall:
+build: install build-container-command
+	@:
+
+distclean: uninstall
+	@:
+
+clean: remove-user-images
+	@:
+
+uninstall: remove-user-images
 	@docker rmi $(base_image)
-
-
-build-user-image:
-	@{                                                                 \
-	docker images | grep -q '$(CONTAINER_NAME)' && exit 0 ;            \
-	echo "*** BUILDING $(CONTAINER_NAME) IMAGE ***" &&                 \
-	cd imagedefs/user &&                                               \
-	docker build --rm --squash -t $(CONTAINER_NAME)                    \
-	--file "$(DOCKERFILE)"                                             \
-	--build-arg BASEIMAGE=$(base_image)                                \
-	--build-arg LOGIN="$(LOGIN)"                                       \
-	--build-arg GIT_USERNAME="$(GIT_USERNAME)"                         \
-	--build-arg GIT_EMAIL="$(GIT_EMAIL)"                               \
-		. ;                                                              \
-	}
 
 define HELP_TEXT
 GIT CONTAINER THINGY
@@ -118,7 +135,7 @@ To use another key, set PRIVATE_KEY_LOCATION on the command line:
 
 
 3.
-For HTTPS based authentication we need to set GIT_CREDENTIALS_LOCATION on the command line.
+For HTTPS based authentication set GIT_CREDENTIALS_LOCATION on the command line.
 
   LOGIN=login                                            \
 	GIT_USERNAME="Friendly Login Name"                     \
@@ -130,7 +147,7 @@ For HTTPS based authentication we need to set GIT_CREDENTIALS_LOCATION on the co
 4.
 You might want to use a different Dockerfile for the user build (say, your org
 has a bunch of certificates that need to be added) - this can be accomplished
-using DOCKERFILE env var, and placing the custom dockerfile in ./imagedefs/user/Dockerfile-custom:
+using the DOCKERFILE env var eg: dockerfile in imagedefs/user/Dockerfile-custom
 
   LOGIN=login                                            \
 	GIT_USERNAME="Friendly Login Name"                     \
@@ -146,7 +163,5 @@ export HELP_TEXT
 help:
 	$(info $(HELP_TEXT))
 	@:
-
-
 
 .PHONY: all clean help
