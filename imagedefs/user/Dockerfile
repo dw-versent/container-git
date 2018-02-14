@@ -7,13 +7,12 @@ ARG LOGIN=nobody
 ARG GIT_USERNAME="Username is nobody"
 ARG GIT_EMAIL="nobody@localhost"
 
-RUN echo "GITHUB USER IS " ${LOGIN}
-
 RUN adduser -D -g '' ${LOGIN}
 RUN addgroup ${LOGIN} git
 
 WORKDIR /home/${LOGIN}
 ADD assets/.bashrc .
+ADD assets/.gitexcludes .
 
 RUN mkdir /home/${LOGIN}/.ssh
 WORKDIR /home/${LOGIN}/.ssh
