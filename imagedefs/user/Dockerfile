@@ -1,29 +1,29 @@
-ARG BASEIMAGE=whatbirdisthat/alpine-git-base
+ARG BASEIMAGE=wbit/alpine-git-base
 FROM ${BASEIMAGE}
 
 WORKDIR /
 
-ARG GITHUB_USER=nobody
-ARG GIT_USERNAME="nobody"
+ARG LOGIN=nobody
+ARG GIT_USERNAME="Username is nobody"
 ARG GIT_EMAIL="nobody@localhost"
 
-RUN echo "GITHUB USER IS " ${GITHUB_USER}
+RUN echo "GITHUB USER IS " ${LOGIN}
 
-RUN adduser -D -g '' ${GITHUB_USER}
-RUN addgroup ${GITHUB_USER} git
+RUN adduser -D -g '' ${LOGIN}
+RUN addgroup ${LOGIN} git
 
-WORKDIR /home/${GITHUB_USER}
+WORKDIR /home/${LOGIN}
 ADD assets/.bashrc .
 
-RUN mkdir /home/${GITHUB_USER}/.ssh
-WORKDIR /home/${GITHUB_USER}/.ssh
-RUN cat /etc/ssh/known_hosts > /home/${GITHUB_USER}/.ssh/known_hosts
-RUN chmod 0400 /home/${GITHUB_USER}/.ssh/known_hosts
+RUN mkdir /home/${LOGIN}/.ssh
+WORKDIR /home/${LOGIN}/.ssh
+RUN cat /etc/ssh/known_hosts > /home/${LOGIN}/.ssh/known_hosts
+RUN chmod 0400 /home/${LOGIN}/.ssh/known_hosts
 
-WORKDIR /home/${GITHUB_USER}
-RUN chown -R ${GITHUB_USER} /home/${GITHUB_USER}
+WORKDIR /home/${LOGIN}
+RUN chown -R ${LOGIN} /home/${LOGIN}
 
-USER ${GITHUB_USER}
+USER ${LOGIN}
 
 RUN git config --global user.name "${GIT_USERNAME}"
 RUN git config --global user.email "${GIT_EMAIL}"

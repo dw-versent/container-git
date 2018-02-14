@@ -1,99 +1,70 @@
 # Github friendly git-in-a-container
-## Git in a container
 
-This is for things like when you need to have a git identity
-that isn't the one you've got hard-coded in your laptop's `~/.ssh/config` and etc
+### For cases where you have multiple accounts on Github / Bitbucket / Gitlab... etc
 
-So you spin up a little gitainer and change the username, add a `id_rsa` and we're good.
+> This is for things like when you need to have a git identity that isn't the one
+you've got hard-coded in your laptop's `~/.ssh/config` and etc.
 
-### Changing the user details
+> So you spin up a little _gitainer_ and change the username,
+add a `id_rsa` and we're good.
 
-There's a bunch of docker ARG thingies which you can change in the `build` script.
+> What it doesn't do *yet* is `gpg` signing etc
 
-So like when you are running Github x 5 and some Bitbuckets and maybe a Gitlab
-or two - you can like have multiple gitentities committing away and like that
-
-So we bind-mount our keys and etc when running the container.
+To make this thing work, try:
 
 ```bash
-docker run -it --rm -v ~/.ssh/id_rsa:/home/${USER}/.ssh/id_rsa .....(etc - see below)
+make help
 ```
 
-Git sometimes need a credentials helper to authenticate with https gits:
+That will print out a nice helpful help text. OR you could ...
 
 ```bash
-docker run -it --rm -v ~/.git.creds:/home/whatbirdisthat/.git-credentials ....(etc - see below)
+LOGIN=yourlogin                               \
+GIT_USERNAME='Friendly Name'                  \
+GIT_EMAIL='the-email@the-place.org'           \
+PRIVATE_KEY_LOCATION=$HOME/.ssh/my-key.key    \
+make build
 ```
 
-## One image for each gitentity
+The above will create a container called `git-yourlogin` which can be spun up
+using the command `git-yourlogin`. The command is created as a little shell
+script in `/usr/local/bin/git-yourlogin`.
 
-To make multiple containers (one for each gitentity) run the build-container script
-using some command line args like so:
+I use this to start a git-session (a minimal shell with git and git-flow) in
+$PWD.
 
-```bash
-./build-container.sh git-wbit whatbirdisthat "What Bird Is That?" "95787+whatbirdisthat@users.noreply.github.com"
-```
+* Example:
 
-## It's all the rage right now doncha know
+  You are in a terminal and the PWD is `/home/you/projects` :
 
-# Wiring this thing up to your bash
+  ```bash
+  $ pwd
+  /home/you/projects
+  $ git-yourlogin
+  yourlogin@git /home/you/projects λ
 
-Put something like this in your `~/.bash_profile` or like that:
+  ```
 
-```bash
-git-wbit() {
-  docker run -it --rm \
-  -v ~/.ssh/wbit_id_rsa:/home/whatbirdisthat/.ssh/id_rsa \
-  -v `pwd`:/`pwd` \
-  -w `pwd` \
-  -h GIT.wbit \
-  git-wbit
-}
-```
+Each user (identity) container is based on *Alpine Linux* (latest) and comes with:
+  * `bash`
+  * `less`
+  * `tree`
+  * `git-docs`
+  * `git-completion`
+  * `git-prompt`
+  * `git-flow`
+  * `openssh-client`
 
-Note we are setting the hostname in this here bash thing, which gives us a nice
-reminder in our PS1 which container we are in, and etc.
+---
 
+> TIP: I use `pass` to help me remember the commands to type so building things
+is a little easier:
 
-OK so things evolved.
+  ```bash
+  cd ~/Containers/container-git && \
+  echo `pass things/containers/build-github-container` | bash -s
+  ```
 
-Now the git container is the only thing that bothers checking my PS1 for repo state.
-I have removed all the `__git_ps1` stuff from my `.bash_profile`.
+  Cool huh?
 
-# containers.d
-
-```bash
-[ -f ~/Containers/container-git/bin/container-git.bash  ] && . ~/Containers/container-git/container-git.bash
-```
-
-This adds some funky docker cleanup functions that have less to do with being a "feature" than
-they are handy to have around when you're not running docker in a clamped container.. ?
-
-# There's a folder issue.
-
-So this is a "containers.d" thing I'm looking into at the moment - and because my laptop
-is not running docker in a docker I can't simply install things to `usr/local/git`
-and there are some workarounds by putting files under `$home/etc` and `$home/bin`.
-
-#### It's there to change.
-
-## Example
-
-There is an example for what a typical entry looks like in the ~/etc/containers.d/git-container.bash
-should look like.
-
-A **containers.d** friendly container will emit a file that we can store which 
-makes the container buildable, by adding a "build" function to the shell.
-
-All much cooler from inside a docker container.
-
-
-# `.containers.d` grows
-
-Now it's `~/.containers.d/*` so the install script can put these
-command definitions in a standard home and it's one line change to
-the `~/.bash_profile` (:O)
-
-# You're sticking stuff in the `~/.bash_profile` ?
-
-Yeah it's a decision to focus on other bits.
+---
